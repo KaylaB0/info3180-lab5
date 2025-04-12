@@ -6,12 +6,15 @@ This file creates your application.
 """
 
 from app import app, db
-from flask import render_template, request, jsonify, send_file
+from flask import render_template, request, jsonify, send_file, Blueprint
 from app.forms import MovieForm
 from app.models import Movie
 import os
 from werkzeug.utils import secure_filename
 from flask_wtf.csrf import generate_csrf
+from flask import send_from_directory
+
+api = Blueprint('api', __name__)
 
 
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
@@ -50,6 +53,23 @@ def movies():
 
     # If validation fails
     return jsonify({"errors": form_errors(form)}), 400
+
+@api.route('/api/v1/movies', methods=['GET'])
+def get_movies():
+    movies = Movie.query.all()
+    movie_list = [{
+        'id': movie.id,
+        'title': movie.title,
+        'description': movie.description,
+        'poster': f'http://localhost:8080/api/v1/posters/{movie.poster}'
+    } for movie in movies]
+    return jsonify({'movies': movie_list})
+
+@api.route('/api/v1/posters/<filename>', methods=['GET'])
+def get_poster(filename):
+    uploads_dir = os.getenv('UPLOAD_FOLDER', os.path.join(os.getcwd(), 'uploads'))
+    return send_from_directory(uploads_dir, filename)
+
 
 @app.route('/api/v1/csrf-token', methods=['GET'])
 def get_csrf():

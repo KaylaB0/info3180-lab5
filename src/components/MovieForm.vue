@@ -20,7 +20,7 @@
     </div>
 
     <div class="form-group mb-3">
-      <label for="poster" class="form-label">Movie Poster</label>
+      <label for="poster" class="form-label">Photo Upload</label>
       <input @change="handleFileUpload" type="file" name="poster" class="form-control" />
     </div>
 
